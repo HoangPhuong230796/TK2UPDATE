@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trắc nghiệm</title>
     <script>
+        let questions = [];
+
         async function loadQuiz() {
             const response = await fetch('questions.json');
-            const questions = await response.json();
+            questions = await response.json();
             let quizContainer = document.getElementById('quiz');
             
             questions.forEach((q, index) => {
-                let questionHTML = `<div class='question'>
+                let questionHTML = `<div class='question' id='question${index}'>
                     <p><strong>Câu ${index + 1}:</strong> ${q.question}</p>
                     <ul>
                         <li><input type='radio' name='q${index}' value='A'> A: ${q.options.A}</li>
@@ -19,6 +21,7 @@
                         <li><input type='radio' name='q${index}' value='C'> C: ${q.options.C}</li>
                         <li><input type='radio' name='q${index}' value='D'> D: ${q.options.D}</li>
                     </ul>
+                    <p class='answer' style='display:none; color:blue;'></p>
                 </div>`;
                 quizContainer.innerHTML += questionHTML;
             });
@@ -26,12 +29,28 @@
         
         function submitQuiz() {
             let score = 0;
-            document.querySelectorAll('.question').forEach((q, index) => {
+            
+            questions.forEach((q, index) => {
                 let selected = document.querySelector(`input[name='q${index}']:checked`);
-                if (selected && selected.value === questions[index].answer) {
-                    score++;
+                let answerText = document.querySelector(`#question${index} .answer`);
+                
+                if (selected) {
+                    if (selected.value === q.answer) {
+                        score++;
+                        answerText.innerHTML = '✅ Đúng';
+                        answerText.style.color = 'green';
+                    } else {
+                        answerText.innerHTML = `❌ Sai - Đáp án đúng: ${q.answer}: ${q.options[q.answer]}`;
+                        answerText.style.color = 'red';
+                    }
+                } else {
+                    answerText.innerHTML = `⚠️ Bạn chưa trả lời - Đáp án đúng: ${q.answer}: ${q.options[q.answer]}`;
+                    answerText.style.color = 'orange';
                 }
+                
+                answerText.style.display = 'block';
             });
+            
             alert(`Bạn đã đúng ${score}/${questions.length} câu!`);
         }
     </script>
